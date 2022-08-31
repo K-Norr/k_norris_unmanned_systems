@@ -30,7 +30,6 @@ def find_y(index):
     return found_y
 
 
-print(find_index(5.5,1))
 
 for i in range(int(lenx)):
     for j in range(int(leny)):
