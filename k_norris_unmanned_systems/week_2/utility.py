@@ -106,6 +106,58 @@ class Path_Djik():
             path.append(path_node.loc)
         return path
         
+class Path_Astar():
+    def __init__(self, cspace:object, parameters:object) ->None:
+        self.cspace = cspace
+        self.parameters = parameters
+        
+    def node_dist(self, node1:object, node2:object) ->float:
+        step_dist = np.sqrt(((node1.loc[0]-node2.loc[0])**2)+((node1.loc[1]-node2.loc[1])**2))
+        heur_dist = np.sqrt(((node1.loc[0]-self.parameters.goal[0])**2)+((node1.loc[1]-self.parameters.goal[1])**2))
+        dist = step_dist + heur_dist
+        return dist
     
+    def find_path(self) ->list:
+        unvisited_nodes = dict()
+        visited_nodes = dict()
+        
+        curr_pos = self.parameters.start
+        curr_index = self.cspace.__index__(curr_pos)
+        curr_node = Node(curr_pos, 0, -1)
+        unvisited_nodes[curr_index] = curr_node
+        
+   
+        while len(unvisited_nodes) > 0:
+            min_id = min(unvisited_nodes, key = lambda x: unvisited_nodes[x].cost)
+            curr_node = unvisited_nodes[min_id]
+            curr_pos = curr_node.loc
+            visited_nodes[min_id] = unvisited_nodes[min_id]
+            del unvisited_nodes[min_id]
+            
+            for i in (-self.cspace.grid, 0, self.cspace.grid):
+                for j in (-self.cspace.grid, 0, self.cspace.grid):
+                    temp_pos = [curr_node.loc[0]+i, curr_node.loc[1]+j]
+                    temp_node = Node(temp_pos, 0, min_id)
+                    temp_index = self.cspace.__index__(temp_pos)
+                    temp_cost = self.node_dist(temp_node, curr_node)
+                    temp_node.cost = curr_node.cost + temp_cost
+                    if self.parameters.__valid__(curr_pos, temp_pos, self.cspace):
+                        if temp_index in visited_nodes:
+                            None
+                        elif temp_index in unvisited_nodes:
+                            if temp_node.cost < unvisited_nodes[temp_index].cost:
+                                unvisited_nodes[temp_index].cost = temp_node.cost
+                        else:
+                            unvisited_nodes[temp_index] = temp_node
+        
+        path = []
+        path_index = self.cspace.__index__(self.parameters.goal)
+        path_node = visited_nodes[path_index]
+        path.append(path_node.loc)
+        while path_node.par_ind != -1:
+            path_index = path_node.par_ind
+            path_node = visited_nodes[path_index]
+            path.append(path_node.loc)
+        return path    
     
     
